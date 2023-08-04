@@ -31,7 +31,6 @@ namespace HappyBrowser.Controls
         {
             components=new System.ComponentModel.Container();
             tsLeftBtnContainer=new ToolStrip();
-            tsbOpenA=new ToolStripButton();
             tsbOpenB=new ToolStripButton();
             toolStripSeparator1=new ToolStripSeparator();
             tsbBackUrl=new ToolStripButton();
@@ -71,21 +70,12 @@ namespace HappyBrowser.Controls
             tsLeftBtnContainer.GripMargin=new Padding(0);
             tsLeftBtnContainer.GripStyle=ToolStripGripStyle.Hidden;
             tsLeftBtnContainer.ImageScalingSize=new Size(20, 20);
-            tsLeftBtnContainer.Items.AddRange(new ToolStripItem[] { tsbOpenA, tsbOpenB, toolStripSeparator1, tsbBackUrl, tsbGoUrl, tsbRefresh, tsbRevert });
+            tsLeftBtnContainer.Items.AddRange(new ToolStripItem[] { tsbOpenB, toolStripSeparator1, tsbBackUrl, tsbGoUrl, tsbRefresh, tsbRevert });
             tsLeftBtnContainer.Location=new Point(0, 0);
             tsLeftBtnContainer.Name="tsLeftBtnContainer";
             tsLeftBtnContainer.Size=new Size(240, 26);
             tsLeftBtnContainer.Stretch=true;
             tsLeftBtnContainer.TabIndex=0;
-            // 
-            // tsbOpenA
-            // 
-            tsbOpenA.DisplayStyle=ToolStripItemDisplayStyle.Text;
-            tsbOpenA.ImageTransparentColor=Color.Magenta;
-            tsbOpenA.Name="tsbOpenA";
-            tsbOpenA.Size=new Size(36, 23);
-            tsbOpenA.Text="采集";
-            tsbOpenA.Click+=TsbOpenA_Click;
             // 
             // tsbOpenB
             // 
@@ -361,7 +351,6 @@ namespace HappyBrowser.Controls
         private ToolStrip tsRightBtnContainer;
         private MenuStrip msFavoritesContainer;
         private ToolStrip tsLeftBtnContainer;
-        private ToolStripButton tsbOpenA;
         private ToolStripSeparator toolStripSeparator1;
         private ToolStripButton tsbBackUrl;
         private ToolStripButton tsbGoUrl;

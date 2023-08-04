@@ -253,13 +253,6 @@ namespace HappyBrowser.Controls
         }
         #endregion 访问历史url操作
 
-        private void TsbOpenA_Click(object sender, EventArgs e)
-        {
-            //Main main = new();
-            //main.StartPosition = FormStartPosition.CenterScreen;
-            //main.Show(this);
-        }
-
         private void TsbOpenB_Click(object sender, EventArgs e)
         {
             FrmTest frmTest = new();
