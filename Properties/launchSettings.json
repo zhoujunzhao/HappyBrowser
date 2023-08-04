@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "HappyBrowser": {
+      "commandName": "Project",
+      "nativeDebugging": false
+    }
+  }
+}
