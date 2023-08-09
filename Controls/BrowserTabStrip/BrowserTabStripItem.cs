@@ -1,11 +1,17 @@
+using HappyBrowser.Properties;
+using HappyBrowser.Services;
 using System.ComponentModel;
+using System.Net.NetworkInformation;
 
 namespace HappyBrowser.Controls.BrowserTabStrip {
 	[ToolboxItem(false)]
 	[DefaultProperty("Title")]
 	[DefaultEvent("Changed")]
 	public class BrowserTabStripItem : Panel {
-        
+
+		private bool loadling = true;
+		private long londTimestamp=0;
+
 		public event EventHandler<EventArgs>? Changed;
 
         private RectangleF stripRect = Rectangle.Empty;
@@ -35,11 +41,6 @@ namespace HappyBrowser.Controls.BrowserTabStrip {
         {
         }
 
-        public BrowserTabStripItem(Control displayControl)
-            : this(string.Empty, displayControl)
-        {
-        }
-
         public BrowserTabStripItem(string caption, Control? displayControl)
         {
             SetStyle(ControlStyles.OptimizedDoubleBuffer, value: true);
@@ -57,7 +58,45 @@ namespace HappyBrowser.Controls.BrowserTabStrip {
             closeButton = new();
         }
 
-		public CtlChromiumBrowser? Browser
+		private static long GetTimestamp()
+		{
+            DateTimeOffset now = DateTimeOffset.UtcNow;
+            long unixTimeMilliseconds = now.ToUnixTimeMilliseconds();
+			return unixTimeMilliseconds;
+        }
+
+		/// <summary>
+		/// 检查可否关闭动画，true=可以关闭，false=时间有点短，最好不直接关闭
+		/// </summary>
+		/// <returns></returns>
+		public bool CheckStoped()
+		{
+            long curr = GetTimestamp();
+			return (curr - this.londTimestamp) >= 1000;
+        }
+
+		/// <summary>
+		/// 用于判定网页是否加载中
+		/// </summary>
+		public bool Loadling
+		{
+			get { return this.loadling; }
+			set 
+			{
+				if (value)
+				{
+					this.londTimestamp = GetTimestamp();
+				}
+				else
+				{
+                    this.londTimestamp = 0;
+                }
+                this.loadling = value;
+            }
+
+        }
+
+        public CtlChromiumBrowser? Browser
 		{
 			get 
 			{

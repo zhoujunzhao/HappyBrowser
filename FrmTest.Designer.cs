@@ -36,8 +36,6 @@ namespace HappyBrowser
             textBox1=new TextBox();
             ctlComboBox2=new CtlComboBox();
             ctlSearchBox1=new CtlSearchBox();
-            button1=new Button();
-            button2=new Button();
             ctlButton1=new CtlButton();
             button3=new Button();
             ctlButton2=new CtlButton();
@@ -63,7 +61,7 @@ namespace HappyBrowser
             comboBox1.DropDownStyle=ComboBoxStyle.DropDownList;
             comboBox1.FormattingEnabled=true;
             comboBox1.Items.AddRange(new object[] { "aaaa", "bbbb", "cccccc" });
-            comboBox1.Location=new Point(150, 170);
+            comboBox1.Location=new Point(302, 205);
             comboBox1.Name="comboBox1";
             comboBox1.Size=new Size(121, 25);
             comboBox1.TabIndex=1;
@@ -80,7 +78,7 @@ namespace HappyBrowser
             // textBox1
             // 
             textBox1.Font=new Font("Microsoft YaHei UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
-            textBox1.Location=new Point(323, 261);
+            textBox1.Location=new Point(403, 261);
             textBox1.Name="textBox1";
             textBox1.Size=new Size(100, 24);
             textBox1.TabIndex=3;
@@ -105,30 +103,6 @@ namespace HappyBrowser
             ctlSearchBox1.Name="ctlSearchBox1";
             ctlSearchBox1.Size=new Size(200, 26);
             ctlSearchBox1.TabIndex=5;
-            // 
-            // button1
-            // 
-            button1.FlatAppearance.BorderSize=0;
-            button1.FlatStyle=FlatStyle.Flat;
-            button1.Image=Properties.Resources.search_clean_16;
-            button1.Location=new Point(41, 356);
-            button1.Margin=new Padding(0);
-            button1.Name="button1";
-            button1.Size=new Size(18, 23);
-            button1.TabIndex=6;
-            button1.UseVisualStyleBackColor=true;
-            // 
-            // button2
-            // 
-            button2.FlatAppearance.BorderSize=0;
-            button2.FlatStyle=FlatStyle.Flat;
-            button2.Image=Properties.Resources.search_find_16;
-            button2.Location=new Point(58, 356);
-            button2.Margin=new Padding(0);
-            button2.Name="button2";
-            button2.Size=new Size(18, 23);
-            button2.TabIndex=7;
-            button2.UseVisualStyleBackColor=true;
             // 
             // ctlButton1
             // 
@@ -181,8 +155,6 @@ namespace HappyBrowser
             Controls.Add(ctlButton2);
             Controls.Add(button3);
             Controls.Add(ctlButton1);
-            Controls.Add(button2);
-            Controls.Add(button1);
             Controls.Add(ctlSearchBox1);
             Controls.Add(ctlComboBox2);
             Controls.Add(textBox1);
@@ -192,6 +164,7 @@ namespace HappyBrowser
             Name="FrmTest";
             Text="FrmTest";
             Load+=FrmTest_Load;
+            Paint+=FrmTest_Paint;
             ResumeLayout(false);
             PerformLayout();
         }
@@ -205,8 +178,6 @@ namespace HappyBrowser
         private TextBox textBox1;
         private CtlComboBox ctlComboBox2;
         private CtlSearchBox ctlSearchBox1;
-        private Button button1;
-        private Button button2;
         private CtlButton ctlButton1;
         private Button button3;
         private CtlButton ctlButton2;

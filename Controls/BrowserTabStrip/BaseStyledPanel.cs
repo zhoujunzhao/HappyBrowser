@@ -22,14 +22,15 @@ namespace HappyBrowser.Controls.BrowserTabStrip {
 			}
 		}
 
-		public event EventHandler ThemeChanged;
+		public event EventHandler? ThemeChanged;
 
 		static BaseStyledPanel() {
 			renderer = new ToolStripProfessionalRenderer();
 		}
 
 		public BaseStyledPanel() {
-			SetStyle(ControlStyles.AllPaintingInWmPaint, value: true);
+            renderer = new ToolStripProfessionalRenderer();
+            SetStyle(ControlStyles.AllPaintingInWmPaint, value: true);
 			SetStyle(ControlStyles.OptimizedDoubleBuffer, value: true);
 			SetStyle(ControlStyles.ResizeRedraw, value: true);
 			SetStyle(ControlStyles.UserPaint, value: true);

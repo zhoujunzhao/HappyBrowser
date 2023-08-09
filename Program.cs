@@ -12,6 +12,7 @@ namespace HappyBrowser
             // see https://aka.ms/applicationconfiguration.
             ApplicationConfiguration.Initialize();
             Application.Run(new FrmMain());
+            //Application.Run(new FrmTest());
         }
     }
 }

@@ -5,6 +5,8 @@ namespace HappyBrowser.Controls.BrowserTabStrip {
 
 		public Rectangle RedrawRect = Rectangle.Empty;
 
+		public static Size CloseButtonSize = new (15,15);
+
 		public bool IsMouseOver;
 
 		public bool IsVisible;
@@ -24,7 +26,8 @@ namespace HappyBrowser.Controls.BrowserTabStrip {
 		public void CalcBounds(BrowserTabStripItem tab) {
 			currentTabItem = tab;
 			int y = (int)tab.StripRect.Height/2-8;
-            Rect = new Rectangle((int)tab.StripRect.Right - 20, (int)tab.StripRect.Top + y, 15, 15);
+			// 关闭按钮
+            Rect = new Rectangle((int)tab.StripRect.Right - 20, (int)tab.StripRect.Top + y, CloseButtonSize.Width, CloseButtonSize.Height);
 			// 样式变换区域
 			RedrawRect = new Rectangle(Rect.X - 2, Rect.Y - 2, Rect.Width + 4, Rect.Height + 4);
 		}

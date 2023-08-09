@@ -1,4 +1,5 @@
 using CefSharp;
+using CefSharp.DevTools.CSS;
 using HappyBrowser.Properties;
 using HappyBrowser.Services;
 using System.ComponentModel;
@@ -39,7 +40,16 @@ namespace HappyBrowser.Controls.BrowserTabStrip {
         /// </summary>
         private const int DEF_START_POS = 53;
 
+        /// <summary>
+        /// 网站图标的尺寸
+        /// </summary>
+        private static SizeF DEF_ICO_SIZE = new(16f,16f);
+
         #endregion 常量
+
+        public event EventHandler<EventArgs>? OnFrameChanged;
+
+        private AnimateImageService imageService;
 
         #region 本地变量
         private int tabStartPosi;
@@ -121,6 +131,11 @@ namespace HappyBrowser.Controls.BrowserTabStrip {
 
             tabContextMenu = new ContextMenuStrip();
             InitTabContextMenu(tabContextMenu.Items);
+
+            imageService = new(Resources.loading);
+            imageService.OnFrameChanged += (object? sender, EventArgs e) => {
+                Invalidate();
+            };
 
             Font = defaultFont;
             sf = new StringFormat();
@@ -392,20 +407,32 @@ namespace HappyBrowser.Controls.BrowserTabStrip {
 
             if (selectedItem == tabItem)
             {
-                List<BrowserTabStripItem> lst = items.GetVisible(this.currentWorkGroup);
+                List<BrowserTabStripItem> lst = items.GetVisible(this.currentWorkGroup,1);
+                // 只用未锁定才可以关闭移除，所以idx肯定大于等于0
                 int idx = lst.IndexOf(tabItem);
+
                 UnSelectItem(tabItem);
                 Items.Remove(tabItem);
                 lst.Remove(tabItem);
+
                 if (lst.Count > 0)
                 {
                     if (idx<0) idx=0;
                     if(idx>=lst.Count) idx=lst.Count-1;
+
                     SelectedItem = lst[idx];
                 }
                 else
                 {
-                    SelectedItem = null;
+                    lst = items.GetVisible(this.currentWorkGroup, 2);
+                    if (lst.Count > 0)
+                    {
+                        SelectedItem = lst[lst.Count - 1];
+                    }
+                    else
+                    {
+                        SelectedItem = null;
+                    }
                 }
             }
             else
@@ -433,7 +460,7 @@ namespace HappyBrowser.Controls.BrowserTabStrip {
         }
         #endregion Tab操作
 
-        #region 标签绘制相关
+        #region 标签绘制
         protected override void OnRightToLeftChanged(EventArgs e)
         {
             base.OnRightToLeftChanged(e);
@@ -543,8 +570,7 @@ namespace HappyBrowser.Controls.BrowserTabStrip {
         private RectangleF OnCalcTabPage(Graphics g, BrowserTabStripItem? currentItem)
         {
             int tabWidth;
-            int icoWidth = 24;
-            int closeWidth = 17;
+            int closeWidth = BrowserTabStripCloseButton.CloseButtonSize.Width;
             
             if (currentItem == null)
             {
@@ -567,18 +593,18 @@ namespace HappyBrowser.Controls.BrowserTabStrip {
                     tabWidth = DEF_MAX_TAB_SIZE;
                     string title = currentItem.Title;
                     SizeF sizeF = g.MeasureString(title, Font);
-                    int excludedWith = icoWidth + closeWidth + 8;
-                    int fontAreaWidth = tabWidth - excludedWith;
+                    float excludedWith = DEF_ICO_SIZE.Width + closeWidth + 8;
+                    float fontAreaWidth = tabWidth - excludedWith;
                     if (sizeF.Width <= fontAreaWidth)
                     {
-                        tabWidth = Convert.ToInt32(sizeF.Width) + excludedWith;
+                        tabWidth = Convert.ToInt32(sizeF.Width + excludedWith);
                     }
                     else
                     {
                         while (sizeF.Width > fontAreaWidth)
                         {
                             title = title.Substring(0, title.Length - 1);
-                            sizeF = g.MeasureString(title+"...", Font);
+                            sizeF = g.MeasureString(title + "...", Font);
                         }
                         currentItem.CutTitle = title + "...";
                     }
@@ -613,7 +639,6 @@ namespace HappyBrowser.Controls.BrowserTabStrip {
 
         private void OnDrawTabButton(Graphics g, BrowserTabStripItem currentItem)
         {
-            Font font = defaultFont;
             RectangleF stripRect = currentItem.StripRect;
             GraphicsPath graphicsPath = new GraphicsPath();
             float tabHeaderLeft = stripRect.Left;
@@ -674,29 +699,38 @@ namespace HappyBrowser.Controls.BrowserTabStrip {
 
             #region 绘制图标
             float sttIcoLocationX = tabHeaderLeft + 5f;
-            if (currentItem.Image != null)
+            float icoWidth = 16f;
+            float sttIcoLocationY = iconLocationY + DEF_TAB_HEADER_HEIGHT/2-icoWidth/2;
+            PointF icoLocation = new PointF(sttIcoLocationX, sttIcoLocationY);
+            RectangleF iconRectangle = stripRect;
+            iconRectangle.Location = icoLocation;
+            iconRectangle.Width = icoWidth;
+            iconRectangle.Height = iconRectangle.Width;
+            if (currentItem.Loadling)
             {
-                float icoWidth = 16f;
-                float sttIcoLocationY = iconLocationY + DEF_TAB_HEADER_HEIGHT/2-icoWidth/2;
-                PointF icoLocation = new PointF(sttIcoLocationX, sttIcoLocationY);
-                RectangleF iconRectangle = stripRect;
-                iconRectangle.Location = icoLocation;
-                iconRectangle.Width = icoWidth;
-                iconRectangle.Height = iconRectangle.Width;
-                sttIcoLocationX = sttIcoLocationX + iconRectangle.Width;
-
-                g.DrawImage(currentItem.Image, iconRectangle);
+                lock (imageService.Image)
+                {
+                    g.DrawImage(imageService.Image, iconRectangle);
+                }
             }
+            else
+            {
+                if (currentItem.Image != null)
+                {
+                    g.DrawImage(currentItem.Image, iconRectangle);
+                }
+            }
+            sttIcoLocationX = sttIcoLocationX + iconRectangle.Width;
             #endregion 绘制图标
 
             #region 绘制标题
-            if (currentItem.Locked == false)
+            if (!currentItem.Locked)
             {
-                float sttLocationX = sttIcoLocationX + 3f;
+                float sttLocationX = sttIcoLocationX + 2f;
 
                 float sttLocationY = titleLocationY + titleDiffY;
                 string title = currentItem.Title;
-                SizeF sizeF = g.MeasureString(title, font);
+                SizeF sizeF = g.MeasureString(title, Font);
 
                 float fontHeight = sizeF.Height;
                 if (fontHeight>0)
@@ -708,19 +742,15 @@ namespace HappyBrowser.Controls.BrowserTabStrip {
                 RectangleF layoutRectangle = stripRect;
                 layoutRectangle.Location = location;
                 layoutRectangle.Width = tabHeaderWidth - (layoutRectangle.Left - tabHeaderLeft) - 4f;
-                if (currentItem == selectedItem)
-                {
-                    layoutRectangle.Width -= 12f;
-                }
                 layoutRectangle.Height = 24f;
 
                 if (currentItem == SelectedItem)
                 {
-                    g.DrawString(currentItem.CutTitle, font, new SolidBrush(ForeColor), layoutRectangle, sf);
+                    g.DrawString(currentItem.CutTitle, Font, new SolidBrush(ForeColor), layoutRectangle, sf);
                 }
                 else
                 {
-                    g.DrawString(currentItem.CutTitle, font, new SolidBrush(ForeColor), layoutRectangle, sf);
+                    g.DrawString(currentItem.CutTitle, Font, new SolidBrush(ForeColor), layoutRectangle, sf);
                 }
             }
             #endregion 绘制标题
@@ -732,6 +762,47 @@ namespace HappyBrowser.Controls.BrowserTabStrip {
             }
 
             currentItem.IsDrawn = true;
+        }
+
+        public void SetTabLoading(BrowserTabStripItem item,bool val)
+        {
+            if (val)
+            {
+                item.Loadling = true;
+                imageService.Play();
+                Invalidate();
+            }
+            else
+            {
+                if (item.CheckStoped())
+                {
+                    item.Loadling = false;
+                    Stop();
+                    Invalidate();
+                }
+                else
+                {
+
+                    Task.Delay(1500).ContinueWith(_ =>
+                    {
+                        item.Loadling = false;
+                        Stop();
+                        Invalidate();
+                    });
+                }
+            }
+        }
+
+        private void Stop()
+        {
+            foreach (BrowserTabStripItem item in Items)
+            {
+                if (item.Loadling)
+                {
+                    return;
+                }
+            }
+            imageService.Stop();
         }
 
         #region 绘制关闭按钮
@@ -863,7 +934,7 @@ namespace HappyBrowser.Controls.BrowserTabStrip {
 
         }
 
-        #endregion 标签绘制相关
+        #endregion 标签绘制
 
         #region 鼠标动作
 

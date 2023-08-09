@@ -237,6 +237,7 @@ namespace HappyBrowser
         {
             tabPage.Name = hisTabKey;
             tabPage.Title="加载中";
+            tabPage.Loadling = true;
 
             if (tabImage != null)
             {
@@ -265,7 +266,8 @@ namespace HappyBrowser
             cwbMain.AddressChanged+=CwbMain_AddressChanged;
             cwbMain.TitleChanged+=CwbMain_TitleChanged;
             cwbMain.FrameLoadEnd+=CwbMain_FrameLoadEnd;
-            cwbMain.DragEnd+=CwbMain_DragEnd;
+            cwbMain.FrameLoadStart+=CwbMain_FrameLoadStart;
+            //cwbMain.DragEnd+=CwbMain_DragEnd;
             cwbMain.LoadingStateChanged+=CwbMain_LoadingStateChanged;
             cwbMain.DownloadUrlChanged+=CwbMain_DownloadUrlChanged;
             cwbMain.FaviconChanged+=CwbMain_FaviconChanged;
@@ -398,6 +400,7 @@ namespace HappyBrowser
                     this.CurrentBrowser = browser;
                     this.ctlHeader.SetUrl(browser.Address);
                     this.ctlHeader.SetStatus(new BrowserStateChangedEventArgs(browser));
+                    this.Text = browser.Title;
                 }
             }
         }
@@ -550,20 +553,20 @@ namespace HappyBrowser
             }
         }
 
-        private void CwbMain_DragEnd(object? sender, DragMouseEventArgs e)
-        {
-            if (e.DragDirection == EnumDragDirection.RightDown)
-            {
-                if (e.DragData!.IsLink)
-                {
-                    this.AddNewTabPage(e.DragData.Link, false, "", null, "", "", false, true);
-                }
-                else if (e.DragData.IsText)
-                {
-                    this.ctlHeader.ToSearchText(e.DragData.Text);
-                }
-            }
-        }
+        //private void CwbMain_DragEnd(object? sender, DragMouseEventArgs e)
+        //{
+        //    if (e.DragDirection == EnumDragDirection.RightDown)
+        //    {
+        //        if (e.DragData!.IsLink)
+        //        {
+        //            this.AddNewTabPage(e.DragData.Link, false, "", null, "", "", false, true);
+        //        }
+        //        else if (e.DragData.IsText)
+        //        {
+        //            this.ctlHeader.ToSearchText(e.DragData.Text);
+        //        }
+        //    }
+        //}
 
         private void CwbMain_AddressChanged(object? sender, AddressChangedEventArgs e)
         {
@@ -603,9 +606,42 @@ namespace HappyBrowser
             this.AddNewTabPage(e.url, false, "", null, "", "", false, true);
         }
 
-        private void CwbMain_FrameLoadEnd(object? sender, CefSharp.FrameLoadEndEventArgs e)
+        private void CwbMain_FrameLoadStart(object? sender, FrameLoadStartEventArgs e)
         {
+            if (e.Frame.IsMain)
+            {
+                InvokeIfNeeded(() =>
+                {
+                    CtlChromiumBrowser browser = (CtlChromiumBrowser)sender!;
+                    BrowserTabStripItem? tabPage = GetTabPage(browser);
+                    if (tabPage != null)
+                    {
+                        Debug.WriteLine($"tab:{tabPage.Name},开启刷新。。。。时间:{DateTime.Now}");
+                        this.browserTabStrip.SetTabLoading(tabPage, true);
+                    }
+                });
+            }
         }
+
+        private void CwbMain_FrameLoadEnd(object? sender, FrameLoadEndEventArgs e)
+        {
+            if (e.Frame.IsMain)
+            {
+                InvokeIfNeeded(() =>
+                {
+                    CtlChromiumBrowser browser = (CtlChromiumBrowser)sender!;
+                    BrowserTabStripItem? tabPage = GetTabPage(browser);
+                    if (tabPage != null)
+                    {
+                        Debug.WriteLine($"tab:{tabPage.Name},停止刷新。。。。时间:{DateTime.Now}");
+                        this.browserTabStrip.SetTabLoading(tabPage,false);
+                    }
+                
+                });
+            }
+        }
+
+
         #endregion 浏览器事件
 
         #endregion tab和浏览器核心

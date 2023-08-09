@@ -42,10 +42,27 @@ namespace HappyBrowser.Services
                 doc.LoadHtml(source);
 
                 HtmlNodeCollection pwdNodes = doc.DocumentNode.SelectNodes(".//input[@type='password']");
-                // 只能有一个密码输入框
-                if (pwdNodes==null || pwdNodes.Count != 1) return loginWebInfo;
+                
+                if (pwdNodes==null || pwdNodes.Count <= 0) return loginWebInfo;
 
                 HtmlNode pwdNode = pwdNodes[0];
+
+                if (pwdNodes.Count > 1)
+                {
+                    HtmlNodeCollection allInputNodes = doc.DocumentNode.SelectNodes(".//input");
+                    int idx = allInputNodes.IndexOf(pwdNode);
+                    // 这是修改密码
+                    if (idx + 1 < allInputNodes.Count && allInputNodes[idx + 1].GetAttributeValue("type", "").ToLower() == "password")
+                    {
+                        return loginWebInfo;
+                    }
+                    else if (idx + 2 < allInputNodes.Count && allInputNodes[idx + 2].GetAttributeValue("type", "").ToLower() == "password")
+                    {
+                        return loginWebInfo;
+                    }
+                    // 有些网页会有两个登录输入框，一个在页面最上面，一个在中间
+                    pwdNode = pwdNodes[1];
+                }
 
                 HtmlNode? parentNode = FindFormNode(pwdNode);
 

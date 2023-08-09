@@ -191,7 +191,8 @@ namespace HappyBrowser.Controls
                 }
                 else if (!string.IsNullOrEmpty(loginWebInfo.AccountName))
                 {
-                    script += $"document.getElementsByName('{loginWebInfo.AccountName}')[0].value='{account}';";
+                    script += $"let eleAs=document.getElementsByName('{loginWebInfo.AccountName}');";
+                    script += "for (let i=0; i<eleAs.length; i++){eleAs[i].value='" + account + "';}";
                 }
                 if (!string.IsNullOrEmpty(loginWebInfo.passwordId))
                 {
@@ -199,8 +200,8 @@ namespace HappyBrowser.Controls
                 }
                 else if (!string.IsNullOrEmpty(loginWebInfo.passwordName))
                 {
-                    script += $"document.getElementsByName('{loginWebInfo.passwordName}')[0].value='{password}';";
-                    
+                    script += $"let elePs=document.getElementsByName('{loginWebInfo.passwordName}');";
+                    script += "for (let i=0; i<elePs.length; i++){elePs[i].value='" + password + "';}";
                 }
                 this.GetBrowser().MainFrame.ExecuteJavaScriptAsync(script);
             }

@@ -69,14 +69,25 @@ namespace HappyBrowser.Controls.BrowserTabStrip {
             return null;
         }
 
-        public virtual List<BrowserTabStripItem> GetVisible(string workgroup)
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="workgroup"></param>
+		/// <param name="flag">0=返回所有可用，1=返回未锁定可用，2=返回锁定可用</param>
+		/// <returns></returns>
+        public virtual List<BrowserTabStripItem> GetVisible(string workgroup,int flag = 0)
         {
 			List<BrowserTabStripItem> lst = new List<BrowserTabStripItem>();
             for (int i = 0; i < base.Count; i++)
             {
                 if (this[i].Visible && this[i].WorkGroup == workgroup)
                 {
-                    lst.Add(this[i]);
+					if(flag == 0)
+						lst.Add(this[i]);
+					else if (flag == 1 && this[i].Locked == false)
+                        lst.Add(this[i]);
+					else if (flag == 2 && this[i].Locked)
+                        lst.Add(this[i]);
                 }
             }
             return lst;

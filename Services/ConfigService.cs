@@ -421,6 +421,7 @@ namespace HappyBrowser.Services
         #endregion 设置保存路径
     }
 
+    #region 子类
     public class HistoryUrl
     {
         public String? Key;
@@ -434,4 +435,5 @@ namespace HappyBrowser.Services
         /// </summary>
         public string WorkGroup = "";
     }
+    #endregion 子类
 }
