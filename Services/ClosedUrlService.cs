@@ -92,7 +92,7 @@ namespace HappyBrowser.Services
 
         private static JArray GetAll()
         {
-            string filePath = Path.Combine(ConfigService.GetRootConfigPath(), FILE_NAME);
+            string filePath = Path.Combine(ConfigService.GetSyncConfigPath(), FILE_NAME);
             string allHistory;
             if (File.Exists(filePath))
             {
@@ -107,7 +107,7 @@ namespace HappyBrowser.Services
 
         private static void Write(JArray jArray)
         {
-            string filePath = Path.Combine(ConfigService.GetRootConfigPath(), FILE_NAME);
+            string filePath = Path.Combine(ConfigService.GetSyncConfigPath(), FILE_NAME);
             File.WriteAllText(filePath, jArray.ToString(), Encoding.UTF8);
         }
 

@@ -44,12 +44,16 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="Controls\CtlHeader.cs~RF4b3113a.TMP" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Include="Images\browser_logo_64.ico" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="CefSharp.Common" Version="115.3.110" />
-    <PackageReference Include="CefSharp.WinForms.NETCore" Version="115.3.110" />
+    <PackageReference Include="CefSharp.Common" Version="115.3.130" />
+    <PackageReference Include="CefSharp.WinForms.NETCore" Version="115.3.130" />
     <PackageReference Include="HtmlAgilityPack" Version="1.11.51" />
     <PackageReference Include="MouseKeyHook" Version="5.7.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
@@ -80,6 +84,18 @@
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="chromiumembeddedframework.runtime.win-arm64" Version="115.3.13" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="chromiumembeddedframework.runtime.win-x64" Version="115.3.13" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="chromiumembeddedframework.runtime.win-x86" Version="115.3.13" />
   </ItemGroup>
 
 </Project>

@@ -2,14 +2,14 @@
 
 namespace HappyBrowser.SubForm
 {
-    public partial class DownloadTask : Form
+    public partial class FrmDownloadTask : Form
     {
-        public DownloadTask()
+        public FrmDownloadTask()
         {
             InitializeComponent();
         }
 
-        public DownloadTask(string downUrl, string fileName)
+        public FrmDownloadTask(string downUrl, string fileName)
         {
             InitializeComponent();
             this.txtDownUrl.Text = downUrl;
@@ -34,7 +34,7 @@ namespace HappyBrowser.SubForm
 
         private void DownloadTask_Load(object sender, EventArgs e)
         {
-            string hisSavePath = ConfigService.DownloadPath.Load();
+            string hisSavePath = ConfigService.GetDownloadPath();
             if (string.IsNullOrEmpty(hisSavePath))
             {
                 hisSavePath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);

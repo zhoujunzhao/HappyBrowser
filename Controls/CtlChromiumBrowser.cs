@@ -67,6 +67,7 @@ namespace HappyBrowser.Controls
             };
 
             this.cefDownloadHander.DownloadChanged += (object? sender, DownloadChangedEventArgs args) => {
+                args.Id=0;
                 DownloadUrlChanged?.Invoke(this, args);
             };
 

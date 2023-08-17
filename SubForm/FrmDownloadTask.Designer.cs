@@ -1,6 +1,6 @@
 ﻿namespace HappyBrowser.SubForm
 {
-    partial class DownloadTask
+    partial class FrmDownloadTask
     {
         /// <summary>
         /// Required designer variable.

@@ -11,9 +11,9 @@ using System.Windows.Forms;
 
 namespace HappyBrowser.SubForm
 {
-    public partial class About : Form
+    public partial class FrmAbout : Form
     {
-        public About()
+        public FrmAbout()
         {
             InitializeComponent();
         }

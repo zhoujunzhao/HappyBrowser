@@ -17,7 +17,11 @@ namespace HappyBrowser
 {
     public partial class FrmMain : Form
     {
-        private readonly Dictionary<int, DownTaskEntity> downTasks = new Dictionary<int, DownTaskEntity>();
+        private readonly Dictionary<string, CtlDownTaskItem> downTasks = new Dictionary<string, CtlDownTaskItem>();
+
+        private FrmDownloadTaskList frmDownloadTaskList;
+        private bool isDownloadTaskListShow = false;
+
         private IKeyboardMouseEvents? globalHook;
 
         private FindWebContent? findWeb;
@@ -29,8 +33,21 @@ namespace HappyBrowser
 
         public FrmMain()
         {
+            frmDownloadTaskList = new(downTasks);
+            frmDownloadTaskList.Load += (object? sender, EventArgs e) => {
+                isDownloadTaskListShow = true;
+            };
+            frmDownloadTaskList.FormClosed += (object? sender, FormClosedEventArgs e) => {
+                isDownloadTaskListShow = false;
+            };
+
             InitializeComponent();
             InitBrowser();
+        }
+
+        private void DownloadTask_Load(object? sender, EventArgs e)
+        {
+            throw new NotImplementedException();
         }
 
         private void InitBrowser()
@@ -131,6 +148,7 @@ namespace HappyBrowser
         }
 
         #region Header相关事件与方法
+
         private void Header_UrlChanged(object sender, HeaderUrlChangedAgrs e)
         {
             if (string.IsNullOrEmpty(e.Url))
@@ -170,9 +188,15 @@ namespace HappyBrowser
         {
             AddNewTabPage(e.Url, true);
         }
+
+        private void CtlHeader_OpenDownloadWindow(object sender, EventArgs e)
+        {
+            frmDownloadTaskList.ShowDialog(this);
+        }
         #endregion Header相关事件与方法
 
         #region tab和浏览器核心
+
         #region 添加tabpage
 
         /// <summary>
@@ -267,7 +291,6 @@ namespace HappyBrowser
             cwbMain.TitleChanged+=CwbMain_TitleChanged;
             cwbMain.FrameLoadEnd+=CwbMain_FrameLoadEnd;
             cwbMain.FrameLoadStart+=CwbMain_FrameLoadStart;
-            //cwbMain.DragEnd+=CwbMain_DragEnd;
             cwbMain.LoadingStateChanged+=CwbMain_LoadingStateChanged;
             cwbMain.DownloadUrlChanged+=CwbMain_DownloadUrlChanged;
             cwbMain.FaviconChanged+=CwbMain_FaviconChanged;
@@ -472,26 +495,27 @@ namespace HappyBrowser
         private void CwbMain_DownloadUrlChanged(object? sender, DownloadChangedEventArgs e)
         {
             #region 下载处理
-            int taskId = e.Id;
+            CtlChromiumBrowser browser = (CtlChromiumBrowser)sender!;
+            string taskId = e.Url;
 
             InvokeIfNeeded(new Action(() =>
             {
                 if (e.DownStatus == EnumDownStatus.Before)
                 {
-                    DownloadTask downloadTask = new DownloadTask(e.Url, e.FileName!);
-
-                    DialogResult dialog = downloadTask.ShowDialog(this);
-
-                    DownTaskEntity downTask = new()
+                    #region 下载任务启动前
+                    if (this.downTasks.ContainsKey(taskId))
                     {
-                        Id = taskId,
-                        WebBrowser = (CtlChromiumBrowser)sender!
-                    };
+                        NotifyUtil.Error($"[{e.FileName}]已在下载中。");
+                        return;
+                    }
+                    FrmDownloadTask frmDownloadTask = new(e.Url, e.FileName!);
+
+                    DialogResult dialog = frmDownloadTask.ShowDialog(this);
 
                     if (dialog == DialogResult.OK)
                     {
-                        string savePath = downloadTask.SavePath;
-                        string fileName = downloadTask.FileName;
+                        string savePath = frmDownloadTask.SavePath;
+                        string fileName = frmDownloadTask.FileName;
                         if (!Directory.Exists(savePath))
                         {
                             Directory.CreateDirectory(savePath);
@@ -499,48 +523,66 @@ namespace HappyBrowser
 
                         string filePath = Path.Combine(savePath, fileName);
                         LogUtil.Info($"下载文件路径:{filePath}");
-                        downTask.DownStatus= EnumDownStatus.InProgress;
+
+                        CtlDownTaskItem taskItem = new(taskId, browser);
+                        taskItem.FileName = fileName;
+                        taskItem.SavePath = filePath;
                         e.BeforeDownloadCallback?.Continue(filePath, showDialog: false);
+                        if (!this.downTasks.ContainsKey(taskId))
+                        {
+                            this.downTasks.Add(taskId, taskItem);
+                            if (this.isDownloadTaskListShow)
+                            {
+                                frmDownloadTaskList.RefreshList();
+                            }
+                        }
+                        Debug.WriteLine("taskId:" + taskId + ",加入");
                     }
-                    else
-                    {
-                        downTask.DownStatus= EnumDownStatus.Cancel;
-                    }
-                    if (this.downTasks.ContainsKey(taskId))
-                    {
-                        this.downTasks[taskId] = downTask;
-                    }
-                    else
-                    {
-                        this.downTasks.Add(taskId, downTask);
-                    }
+                    #endregion 下载任务启动前
                 }
-                else if (e.DownStatus == EnumDownStatus.InProgress)
-                {
-                    if (this.downTasks.ContainsKey(taskId) && this.downTasks[taskId].DownStatus == EnumDownStatus.Cancel)
-                    {
-                        e.DownloadItemCallback?.Cancel();
-                    }
-                }
-                else if (e.DownStatus == EnumDownStatus.Complete)
+                else
                 {
                     if (this.downTasks.ContainsKey(taskId))
                     {
-                        this.downTasks[taskId].WebBrowser.Stop();
-                        this.downTasks[taskId].WebBrowser?.Destroy();
-                        this.downTasks.Remove(taskId);
+                        this.downTasks[taskId].DownloadItemCallback = e.DownloadItemCallback;
                     }
-                }
-                else if (e.DownStatus == EnumDownStatus.Cancel || e.DownStatus == EnumDownStatus.Error)
-                {
-                    if (this.downTasks.ContainsKey(taskId))
+
+                    if (e.DownStatus == EnumDownStatus.InProgress)
                     {
-                        this.downTasks[taskId].WebBrowser.Stop();
-                        this.downTasks[taskId].WebBrowser?.Destroy();
-                        this.downTasks.Remove(taskId);
+                        if (this.downTasks.ContainsKey(taskId) && this.isDownloadTaskListShow)
+                        {
+                            this.downTasks[taskId].ProgressValue = e.PercentComplete;
+                            Debug.WriteLine(e.DownStatus.ToString() + "=" + e.PercentComplete + "%");
+                        }
+                    }
+                    else if (e.DownStatus == EnumDownStatus.Complete)
+                    {
+                        if (this.downTasks.ContainsKey(taskId))
+                        {
+                            this.downTasks[taskId].WebBrowser.Stop();
+                            this.downTasks[taskId].WebBrowser.Destroy();
+                            this.downTasks.Remove(taskId);
+                            if (this.isDownloadTaskListShow)
+                            {
+                                frmDownloadTaskList.RefreshList();
+                            }
+                        }
+                    }
+                    else if (e.DownStatus == EnumDownStatus.Cancel || e.DownStatus == EnumDownStatus.Error)
+                    {
+                        if (this.downTasks.ContainsKey(taskId))
+                        {
+                            this.downTasks[taskId].WebBrowser.Stop();
+                            this.downTasks[taskId].WebBrowser.Destroy();
+                            this.downTasks.Remove(taskId);
+                            if (this.isDownloadTaskListShow)
+                            {
+                                frmDownloadTaskList.RefreshList();
+                            }
+                        }
                     }
                 }
-                Debug.WriteLine(e.DownStatus.ToString() + "=" + e.PercentComplete + "%");
+                
             }));
             #endregion 下载处理
         }
@@ -552,21 +594,6 @@ namespace HappyBrowser
                 this.ctlHeader.SetStatus(new BrowserStateChangedEventArgs(e));
             }
         }
-
-        //private void CwbMain_DragEnd(object? sender, DragMouseEventArgs e)
-        //{
-        //    if (e.DragDirection == EnumDragDirection.RightDown)
-        //    {
-        //        if (e.DragData!.IsLink)
-        //        {
-        //            this.AddNewTabPage(e.DragData.Link, false, "", null, "", "", false, true);
-        //        }
-        //        else if (e.DragData.IsText)
-        //        {
-        //            this.ctlHeader.ToSearchText(e.DragData.Text);
-        //        }
-        //    }
-        //}
 
         private void CwbMain_AddressChanged(object? sender, AddressChangedEventArgs e)
         {
@@ -616,7 +643,6 @@ namespace HappyBrowser
                     BrowserTabStripItem? tabPage = GetTabPage(browser);
                     if (tabPage != null)
                     {
-                        Debug.WriteLine($"tab:{tabPage.Name},开启刷新。。。。时间:{DateTime.Now}");
                         this.browserTabStrip.SetTabLoading(tabPage, true);
                     }
                 });
@@ -633,10 +659,9 @@ namespace HappyBrowser
                     BrowserTabStripItem? tabPage = GetTabPage(browser);
                     if (tabPage != null)
                     {
-                        Debug.WriteLine($"tab:{tabPage.Name},停止刷新。。。。时间:{DateTime.Now}");
-                        this.browserTabStrip.SetTabLoading(tabPage,false);
+                        this.browserTabStrip.SetTabLoading(tabPage, false);
                     }
-                
+
                 });
             }
         }
@@ -658,6 +683,6 @@ namespace HappyBrowser
             }
         }
 
-
+        
     }
 }

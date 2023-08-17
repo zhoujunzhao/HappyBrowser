@@ -36,7 +36,7 @@ namespace HappyBrowser.Controls.CtlEventArgs
         public IBeforeDownloadCallback? BeforeDownloadCallback { get; set; }
 
 
-        public int? PercentComplete {get; set; }
+        public int PercentComplete {get; set; }
         public DateTime? EndTime { get; set; }
 
         public IDownloadItemCallback? DownloadItemCallback { get; set; }

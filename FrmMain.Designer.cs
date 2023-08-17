@@ -51,6 +51,7 @@ namespace HappyBrowser
             ctlHeader.ForwardOrBackClick+=CtlHeader_ForwardOrBackClick;
             ctlHeader.UrlChanged+=Header_UrlChanged;
             ctlHeader.SearchChanged+=CtlHeader_SearchChanged;
+            ctlHeader.OpenDownloadWindow+=CtlHeader_OpenDownloadWindow;
             // 
             // browserTabStrip
             // 
@@ -92,7 +93,7 @@ namespace HappyBrowser
             ssTopStatus.TabIndex=2;
             ssTopStatus.Text="statusStrip1";
             // 
-            // BrowserMain
+            // FrmMain
             // 
             AutoScaleDimensions=new SizeF(7F, 17F);
             AutoScaleMode=AutoScaleMode.Font;
@@ -100,7 +101,7 @@ namespace HappyBrowser
             Controls.Add(ssTopStatus);
             Controls.Add(tlpTopContainer);
             Icon=(Icon)resources.GetObject("$this.Icon");
-            Name="BrowserMain";
+            Name="FrmMain";
             StartPosition=FormStartPosition.CenterScreen;
             Text="爱好者浏览器";
             WindowState=FormWindowState.Maximized;

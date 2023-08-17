@@ -3,7 +3,7 @@ using HappyBrowser.Properties;
 
 namespace HappyBrowser.SubForm
 {
-    partial class About
+    partial class FrmAbout
     {
         /// <summary>
         /// Required designer variable.
@@ -31,7 +31,7 @@ namespace HappyBrowser.SubForm
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(About));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FrmAbout));
             lblOs=new Label();
             lblCef=new Label();
             lbaChromium=new Label();

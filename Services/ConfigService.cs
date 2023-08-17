@@ -1,6 +1,7 @@
 ﻿using HappyBrowser.Config;
 using HappyBrowser.Entity;
 using HappyBrowser.Util;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.IO;
 using System.Text;
@@ -9,29 +10,24 @@ namespace HappyBrowser.Services
 {
     public class ConfigService
     {
-        #region 配置文件保存路径，主要用于配置同步
-        private static string? rootConfigPath;
-        private const string ROOT_CONFIG_PATH_FILENAME = "root.ini";
+        #region 根配置文件操作
+        private static string configSyncPath="";
+        private const string ROOT_CONFIG_PATH_FILENAME = "root.json";
+
         /// <summary>
         /// 读取配置文件保存位置
         /// 主要考虑使用同步盘进行配置同步
         /// </summary>
         /// <returns></returns>
-        public static string GetRootConfigPath()
+        public static string GetSyncConfigPath()
         {
-            if (!string.IsNullOrEmpty(rootConfigPath) && Directory.Exists(rootConfigPath)) 
+            if (!string.IsNullOrEmpty(configSyncPath))
             {
-                return rootConfigPath;
+                return configSyncPath;
             }
-            string appPath = Application.StartupPath;
-            string rootConfigFile = Path.Combine(appPath,ROOT_CONFIG_PATH_FILENAME);
-            if (File.Exists(rootConfigFile)) {
-                rootConfigPath = File.ReadAllText(rootConfigFile);
-                return rootConfigPath;
-            }
-            rootConfigPath = Path.Combine(appPath, "Config");
-            File.WriteAllText(rootConfigFile, rootConfigPath);
-            return rootConfigPath;
+            RootConfig rootConfig = GetRootConfig();
+            configSyncPath = rootConfig.RootPath;
+            return configSyncPath;
         }
 
         /// <summary>
@@ -39,23 +35,30 @@ namespace HappyBrowser.Services
         /// </summary>
         /// <param name="rootPath"></param>
         /// <returns></returns>
-        public static bool ModifyRootConfigPath(string rootPath)
+        public static bool ModifySyncConfigPath(string rootPath)
         {
             if (string.IsNullOrEmpty(rootPath) || !Directory.Exists(rootPath))
             {
                 return false;
             }
 
-            string? oldRootConfigPath = rootConfigPath;
+            if (rootPath.ToLower() == configSyncPath.ToLower())
+            {
+                return false;
+            }
+
+            string? oldRootConfigPath = configSyncPath;
             string[] configFileList = new string[] { CONFIG_FILE_NAME, BookMarksService.BOOK_MARKS_FILE_NAME };
 
-            rootConfigPath = rootPath;
-            File.WriteAllText(Path.Combine(Application.StartupPath, ROOT_CONFIG_PATH_FILENAME), rootConfigPath);
+            RootConfig rootConfig = GetRootConfig();
+            rootConfig.RootPath = rootPath;
+            WriteRootConfig(rootConfig);
+            configSyncPath = rootPath;
 
             foreach (string itm in configFileList)
             {
-                string fromPath = Path.Combine(oldRootConfigPath,itm);
-                string toPath = Path.Combine(rootConfigPath, itm);
+                string fromPath = Path.Combine(oldRootConfigPath, itm);
+                string toPath = Path.Combine(configSyncPath, itm);
 
                 if (File.Exists(fromPath) && !File.Exists(toPath))
                 {
@@ -64,7 +67,84 @@ namespace HappyBrowser.Services
             }
             return true;
         }
-        #endregion 配置文件保存路径，主要用于配置同步
+
+
+        /// <summary>
+        /// 读取下载文件保存位置
+        /// </summary>
+        /// <returns></returns>
+        public static string GetDownloadPath()
+        {
+            RootConfig rootConfig = GetRootConfig();
+            return rootConfig.DownloadPath;
+        }
+
+        /// <summary>
+        /// 修改配置文件保存位置
+        /// </summary>
+        /// <param name="rootPath"></param>
+        /// <returns></returns>
+        public static bool ModifyDownloadPath(string newPath)
+        {
+            if (string.IsNullOrEmpty(newPath) || !Directory.Exists(newPath))
+            {
+                return false;
+            }
+            RootConfig rootConfig = GetRootConfig();
+
+            if (newPath.ToLower() == rootConfig.DownloadPath.ToLower())
+            {
+                return false;
+            }
+            rootConfig.DownloadPath = newPath;
+            WriteRootConfig(rootConfig);
+            return true;
+        }
+
+        /// <summary>
+        /// 读取根配置文件
+        /// 该文件和执行程序同路径
+        /// </summary>
+        /// <returns></returns>
+        public static RootConfig GetRootConfig()
+        {
+            RootConfig rootConfig = new();
+
+            string appPath = Application.StartupPath;
+            
+            rootConfig.RootPath = Path.Combine(appPath, "Config");
+            rootConfig.DownloadPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+
+            string configFileName = Path.Combine(appPath,ROOT_CONFIG_PATH_FILENAME);
+
+            if (File.Exists(configFileName))
+            {
+                string content = File.ReadAllText(configFileName);
+                if (string.IsNullOrEmpty(content))
+                {
+                    WriteRootConfig(rootConfig);
+                }
+                else
+                {
+                    rootConfig = JToken.Parse(content).ToObject<RootConfig>()!;
+                }
+            }
+            else
+            {
+                WriteRootConfig(rootConfig);
+            }
+            configSyncPath = rootConfig.RootPath;
+            return rootConfig;
+        }
+
+        private static void WriteRootConfig(RootConfig rootConfig)
+        {
+            string appPath = Application.StartupPath;
+            string configFileName = Path.Combine(appPath, ROOT_CONFIG_PATH_FILENAME);
+            File.WriteAllText(configFileName, JToken.FromObject(rootConfig).ToString());
+        }
+
+        #endregion 根配置文件操作
 
         #region 基本配置信息
         private static string configInfo = "{}";
@@ -87,7 +167,7 @@ namespace HappyBrowser.Services
             {
                 try
                 {
-                    string configPath = Path.Combine(GetRootConfigPath(), CONFIG_FILE_NAME);
+                    string configPath = Path.Combine(GetSyncConfigPath(), CONFIG_FILE_NAME);
                     string strConfig = config.ToString();
                     File.WriteAllText(configPath, strConfig);
                     configInfo = strConfig;
@@ -111,7 +191,7 @@ namespace HappyBrowser.Services
             {
                 if (string.IsNullOrEmpty(configInfo) || configInfo == "{}" || isForce)
                 {
-                    string configPath = Path.Combine(GetRootConfigPath(), CONFIG_FILE_NAME);
+                    string configPath = Path.Combine(GetSyncConfigPath(), CONFIG_FILE_NAME);
                     if (!File.Exists(configPath))
                     {
                         File.WriteAllText(configPath, "{}", Encoding.UTF8);
@@ -217,7 +297,7 @@ namespace HappyBrowser.Services
                 foreach (JProperty item in data.Properties())
                 {
                     JObject node = (JObject)item.Value;
-                    urls.Add(new HistoryUrl()
+                    urls.Add(new()
                     {
                         Key = item.Name,
                         Url = node.Value<string>("url"),
@@ -383,42 +463,6 @@ namespace HappyBrowser.Services
         }
         #endregion 登录账号密码信息
 
-        #region 设置保存路径
-        public class DownloadPath
-        {
-            private const string DOWNLOAD_PATH_KEY = "downloadPath";
-
-            public static void Save(string path)
-            {
-                ReadConfigInfo(true);
-                JObject configAll = (JObject)JToken.Parse(configInfo);
-                if (configAll.ContainsKey(DOWNLOAD_PATH_KEY))
-                {
-                    configAll[DOWNLOAD_PATH_KEY] = path;
-                }
-                else
-                {
-                    configAll.Add(DOWNLOAD_PATH_KEY,path);
-                }
-                SaveConfig(configAll);
-            }
-
-            public static string Load()
-            {
-                ReadConfigInfo();
-                JObject configAll = (JObject)JToken.Parse(configInfo);
-                if (configAll.ContainsKey(DOWNLOAD_PATH_KEY))
-                {
-                    return configAll.GetValue(DOWNLOAD_PATH_KEY).ToString();
-                }
-                else
-                {
-                    return "";
-                }
-            }
-
-        }
-        #endregion 设置保存路径
     }
 
     #region 子类
@@ -434,6 +478,21 @@ namespace HappyBrowser.Services
         /// 工作组
         /// </summary>
         public string WorkGroup = "";
+    }
+
+    public class RootConfig
+    {
+        /// <summary>
+        /// 根配置文件路径
+        /// 也就是需要同步的配置文件保存路径
+        /// </summary>
+        public string RootPath = "";
+
+        /// <summary>
+        /// 下载文件保存路径
+        /// </summary>
+        public string DownloadPath = "";
+
     }
     #endregion 子类
 }

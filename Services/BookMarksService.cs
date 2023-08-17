@@ -43,7 +43,7 @@ namespace HappyBrowser.Services
             };
             CreateChildItem(rootNode.SelectNodes("dt"), rootItem);
 
-            string filePath = Path.Combine(ConfigService.GetRootConfigPath(),BOOK_MARKS_FILE_NAME);
+            string filePath = Path.Combine(ConfigService.GetSyncConfigPath(),BOOK_MARKS_FILE_NAME);
             File.WriteAllText(filePath, rootItem.ToString(),Encoding.UTF8);
             BookMarksChanged?.Invoke(null,null);
         }
@@ -97,7 +97,7 @@ namespace HappyBrowser.Services
         #region 读取标签至界面
         public static ToolStripMenuItem[] ReadToDisplay()
         {
-            string filePath = Path.Combine(ConfigService.GetRootConfigPath(), BOOK_MARKS_FILE_NAME);
+            string filePath = Path.Combine(ConfigService.GetSyncConfigPath(), BOOK_MARKS_FILE_NAME);
             if (!File.Exists(filePath))
             {
                 return Array.Empty<ToolStripMenuItem>();
@@ -171,7 +171,7 @@ namespace HappyBrowser.Services
             {
                 return false;
             }
-            string filePath = Path.Combine(ConfigService.GetRootConfigPath(), BOOK_MARKS_FILE_NAME);
+            string filePath = Path.Combine(ConfigService.GetSyncConfigPath(), BOOK_MARKS_FILE_NAME);
             using StreamReader file = File.OpenText(filePath);
             string info = file.ReadToEnd();
             file.Close();
@@ -215,7 +215,7 @@ namespace HappyBrowser.Services
             {
                 return false;
             }
-            string filePath = Path.Combine(ConfigService.GetRootConfigPath(), BOOK_MARKS_FILE_NAME);
+            string filePath = Path.Combine(ConfigService.GetSyncConfigPath(), BOOK_MARKS_FILE_NAME);
             using StreamReader file = File.OpenText(filePath);
             string info = file.ReadToEnd();
             file.Close();

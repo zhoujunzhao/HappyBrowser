@@ -13,6 +13,8 @@ namespace HappyBrowser.Controls
         public event EventHandler<HeaderUrlChangedAgrs>? UrlChanged;
         public event EventHandler<HeaderSearchChangedAgrs>? SearchChanged;
 
+        public event EventHandler? OpenDownloadWindow;
+
         public CtlHeader()
         {
             InitializeComponent();
@@ -155,21 +157,19 @@ namespace HappyBrowser.Controls
 
         private void TsmiAbout_Click(object sender, EventArgs e)
         {
-            SubForm.About about = new();
+            SubForm.FrmAbout about = new();
             about.StartPosition = FormStartPosition.CenterParent;
             about.ShowDialog(this);
         }
 
         private void TsbOpenDownList_Click(object sender, EventArgs e)
         {
-            SubForm.DownloadTaskList taskList = new();
-            taskList.StartPosition = FormStartPosition.CenterParent;
-            taskList.Show(this);
+            OpenDownloadWindow?.Invoke(sender, e);
         }
 
         private void TsmiBrowserSet_Click(object sender, EventArgs e)
         {
-            SubForm.BrowserSet browserSet = new();
+            SubForm.FrmBrowserSet browserSet = new();
             browserSet.StartPosition = FormStartPosition.CenterParent;
             browserSet.ShowDialog(this);
         }

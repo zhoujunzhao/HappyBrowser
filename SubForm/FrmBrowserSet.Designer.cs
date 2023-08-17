@@ -3,7 +3,7 @@ using HappyBrowser.Properties;
 
 namespace HappyBrowser.SubForm
 {
-    partial class BrowserSet
+    partial class FrmBrowserSet
     {
         /// <summary>
         /// Required designer variable.
@@ -38,6 +38,9 @@ namespace HappyBrowser.SubForm
             txtRootConfigPath=new TextBox();
             btnSelRootConfigPath=new Button();
             fbdSelectPath=new FolderBrowserDialog();
+            btnSelDownloadPath=new Button();
+            txtDownloadPath=new TextBox();
+            label2=new Label();
             SuspendLayout();
             // 
             // btnSave
@@ -87,9 +90,9 @@ namespace HappyBrowser.SubForm
             // 
             // labelControl1
             // 
-            labelControl1.Location=new Point(12, 12);
+            labelControl1.Location=new Point(5, 12);
             labelControl1.Name="labelControl1";
-            labelControl1.Size=new Size(108, 14);
+            labelControl1.Size=new Size(120, 14);
             labelControl1.TabIndex=4;
             labelControl1.Text="配置文件保存路径：";
             // 
@@ -113,11 +116,42 @@ namespace HappyBrowser.SubForm
             btnSelRootConfigPath.Text="...";
             btnSelRootConfigPath.Click+=BtnSelRootConfigPath_Click;
             // 
+            // btnSelDownloadPath
+            // 
+            btnSelDownloadPath.Anchor=AnchorStyles.Top|AnchorStyles.Right;
+            btnSelDownloadPath.FlatStyle=FlatStyle.Popup;
+            btnSelDownloadPath.Location=new Point(647, 54);
+            btnSelDownloadPath.Name="btnSelDownloadPath";
+            btnSelDownloadPath.Size=new Size(25, 23);
+            btnSelDownloadPath.TabIndex=9;
+            btnSelDownloadPath.Text="...";
+            btnSelDownloadPath.Click+=BtnSelDownloadPath_Click;
+            // 
+            // txtDownloadPath
+            // 
+            txtDownloadPath.Anchor=AnchorStyles.Top|AnchorStyles.Left|AnchorStyles.Right;
+            txtDownloadPath.Location=new Point(118, 54);
+            txtDownloadPath.Name="txtDownloadPath";
+            txtDownloadPath.ReadOnly=true;
+            txtDownloadPath.Size=new Size(530, 23);
+            txtDownloadPath.TabIndex=8;
+            // 
+            // label2
+            // 
+            label2.Location=new Point(5, 57);
+            label2.Name="label2";
+            label2.Size=new Size(120, 14);
+            label2.TabIndex=7;
+            label2.Text="下载文件保存路径：";
+            // 
             // BrowserSet
             // 
             AutoScaleDimensions=new SizeF(7F, 17F);
             AutoScaleMode=AutoScaleMode.Font;
             ClientSize=new Size(684, 450);
+            Controls.Add(btnSelDownloadPath);
+            Controls.Add(txtDownloadPath);
+            Controls.Add(label2);
             Controls.Add(btnSelRootConfigPath);
             Controls.Add(txtRootConfigPath);
             Controls.Add(labelControl1);
@@ -146,5 +180,8 @@ namespace HappyBrowser.SubForm
         private Button btnSelRootConfigPath;
         private FolderBrowserDialog fbdSelectPath;
         private Label label1;
+        private Button btnSelDownloadPath;
+        private TextBox txtDownloadPath;
+        private Label label2;
     }
 }
